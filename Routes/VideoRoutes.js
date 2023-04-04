@@ -45,6 +45,17 @@ videoRouter.get('/by-tag',async (req,res)=>{
   }
 })
 
+//  get all video follow 
+videoRouter.get("/followed", async (req, res) => {
+  try {
+    const videos = await Video.find({ vd_followed: 1 });
+    res.json(videos);
+  } catch (error) {
+   
+    res.status(400).json({ message: "Internal Server Error" });
+  }
+});
+
 
 //  get single video
 videoRouter.get(
