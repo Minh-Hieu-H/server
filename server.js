@@ -5,6 +5,7 @@ import connectDatabase from "./config/MongoDb.js";
 
 // import Route
 import videoRouter from "./Routes/VideoRoutes.js";
+import tagRouter from "./Routes/TagRoutes.js";
 
 dotenv.config()
 const PORT = process.env.PORT
@@ -16,6 +17,7 @@ app.use(cors())
 
 //  API
 app.use("/api/videos", videoRouter);
+app.use('/api/tags',tagRouter);
 
 
 // 

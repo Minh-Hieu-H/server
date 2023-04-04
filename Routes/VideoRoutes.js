@@ -6,7 +6,7 @@ import { remove } from 'diacritics';
 
 const videoRouter = express.Router();
 
-//  get ALL video
+//  get ALL video and Search
 videoRouter.get(
   "/all", async (req, res) => {
     try {
@@ -29,18 +29,23 @@ videoRouter.get(
     }
   }
 );
-videoRouter.get('/by-tag/:tag', async (req, res) => {
+// Get video all tag
+videoRouter.get('/by-tag',async (req,res)=>{
   try {
-    //   const encodedTag = req.params.tag;
-    //   const tag = decodeURIComponent(encodedTag);
-    const tag = req.params.tag;
-    const videos = await Video.find({ video_tag: tag });
-    res.json(videos);
+    const tagStatistics = await Video.aggregate([
+      { $unwind: "$vd_tag" },
+      { $group: { _id: "$vd_tag", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]);
+
+    res.json(tagStatistics);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: "Internal server error" });
   }
-});
+})
+
+
 //  get single video
 videoRouter.get(
   "/:id", async (req, res) => {
