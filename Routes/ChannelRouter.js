@@ -6,25 +6,25 @@ import Video from "../Models/VideoModel.js";
 const channelRouter = express.Router();
 // Set up the API client
 const youtube = google.youtube({
-    version: 'v3',
-    auth: 'AIzaSyAHgE5wM-mYD0qT4rvI9Z3vQJ9BRsUYJak'
-  });
+  version: 'v3',
+  auth: 'AIzaSyAHgE5wM-mYD0qT4rvI9Z3vQJ9BRsUYJak'
+});
 
 // Get channel data by ID
 async function getChannelData(channelId) {
-    try {
-      const response = await youtube.channels.list({
-        part: 'snippet',
-        id: channelId
-      });
-      const channelData = response.data.items[0].snippet;
-      const channelLink = `https://www.youtube.com/channel/${channelId}`;
-      return { channelName: channelData.title, channelLink: channelLink };
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
+  try {
+    const response = await youtube.channels.list({
+      part: 'snippet',
+      id: channelId
+    });
+    const channelData = response.data.items[0].snippet;
+    const channelLink = `https://www.youtube.com/channel/${channelId}`;
+    return { channelName: channelData.title, channelLink: channelLink };
+  } catch (error) {
+    console.error(error);
+    return null;
   }
+}
 // Get list channel
 channelRouter.get("/all", async (req, res) => {
   try {
@@ -63,7 +63,7 @@ channelRouter.get("/:idchannel", async (req, res) => {
     res.json({
       channel_name: channel.channel_name,
       video_count: videoCount,
-      videos: videos.length>80 ?videos.limit(80):videos,
+      videos: videos.length > 80 ? videos.limit(80) : videos,
       channel_link: channel.channel_link
     });
   } catch (error) {
@@ -71,19 +71,51 @@ channelRouter.get("/:idchannel", async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
-  // Get channel data by ID
-// channelRouter.get("/:channelId", async (req, res) => {
-//     try {
-//       const channelId = req.params.channelId;
-//       const channelData = await getChannelData(channelId);
-//       if (channelData) {
-//         res.json(channelData);
-//       } else {
-//         res.status(404).json({ message: 'Channel not found' });
-//       }
-//     } catch (err) {
-//       res.status(500).json({ message: err.message });
-//     }
-//   });
+//  Add new channel
+channelRouter.post("/", async (req, res) => {
+  const { channelValue } = req.body;
+  console.log(channelValue)
+  const channelData = await getChannelData(channelValue);
+  try {
+    // Kiểm tra xem channel
+    if (channelData) {
+      try {
+        // Kiểm tra xem tag đã tồn tại trong cơ sở dữ liệu chưa
+        const existingChannel = await Channel.findOne({ channel_id: channelValue });
+        if (existingChannel) {
+          return res.status(400).json({ message: "Channel already exists" });
+        }
+        // Tạo tag mới và lưu vào cơ sở dữ liệu
+        const newChannel = new Channel({ channel_id: channelValue,
+                                         channel_name: channelData.channelName,
+                                         channel_link : channelData.channelLink                                        
+                                        });
+        await newChannel.save();
+        // Trả về thông tin của tag mới đã tạo
+        res.json(newChannel);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }} else {
+    res.status(404).json({ message: 'Channel not found' });
+  }
+} catch (err) {
+  res.status(500).json({ message: err.message });
+}
+
+});
+// check channel data by ID
+channelRouter.get("/:channelId", async (req, res) => {
+  try {
+    const channelId = req.params.channelId;
+    if (channelData) {
+      res.json(channelData);
+    } else {
+      res.status(404).json({ message: 'Channel not found' });
+    }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 export default channelRouter;
