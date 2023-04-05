@@ -50,11 +50,24 @@ videoRouter.get("/followed", async (req, res) => {
     const videos = await Video.find({ vd_followed: 1 });
     res.json(videos);
   } catch (error) {
-   
     res.status(400).json({ message: "Internal Server Error" });
   }
 });
 
+//  get top negative video 
+videoRouter.get("/top-neg", async (req, res) => {
+  try {
+    const videos = await Video.aggregate([
+      { $match: { vd_label: 2 } },
+      { $sort: { vd_react: -1, vd_comment: -1 } },
+      { $limit: 7 }
+    ]);
+    res.json(videos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
 
 //  get single video
 videoRouter.get("/:id", async (req, res) => {
