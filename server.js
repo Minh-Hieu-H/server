@@ -6,6 +6,7 @@ import connectDatabase from "./config/MongoDb.js";
 // import Route
 import videoRouter from "./Routes/VideoRoutes.js";
 import tagRouter from "./Routes/TagRoutes.js";
+import channelRouter from "./Routes/ChannelRouter.js";
 
 dotenv.config();
 const PORT = process.env.PORT;
@@ -18,6 +19,7 @@ app.use(cors());
 //  API
 app.use("/api/videos", videoRouter);
 app.use("/api/tags", tagRouter);
+app.use("/api/channels",channelRouter);
 
 //
 app.listen(PORT, console.log(`server is running ${PORT}`));

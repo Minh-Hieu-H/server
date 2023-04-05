@@ -43,6 +43,21 @@ videoRouter.get("/by-tag", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 })
+// Get video all channel
+videoRouter.get("/by-channel", async (req, res) => {
+  try {
+    const channelStatistics = await Video.aggregate([
+      { $unwind: "$vd_tag" },
+      { $group: { _id: "$vd_channel", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]);
+
+    res.json(channelStatistics);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+})
 
 //  get all video follow 
 videoRouter.get("/followed", async (req, res) => {
